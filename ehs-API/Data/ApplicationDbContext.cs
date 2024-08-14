@@ -9,5 +9,16 @@ namespace ehs_API.Data
             : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure entity properties and relationships here
+            // Example:
+            // modelBuilder.Entity<YourEntity>()
+            //     .ToTable("YourTableName");
+        }
+
     }
 }

@@ -7,7 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-
+using ehs_API.Service;
+using ehs_API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,6 @@ builder.Services.AddAutoMapper(typeof(Program));
 // Configure Entity Framework and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EHSConnectionString")));
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -31,6 +31,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequiredLength = 8;
     options.Password.RequiredUniqueChars = 1;
+    // 2FA tocken provider
+    options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+    options.SignIn.RequireConfirmedEmail = true;
 });
 
 // Configure JWT authentication
@@ -62,9 +65,17 @@ builder.Host.UseSerilog((context, config) =>
         .WriteTo.Console();
 });
 
-// Configure other services such as rate limiting, CAPTCHA, etc.
-builder.Services.AddScoped<RateLimitingMiddleware>();
-builder.Services.AddSingleton(new GoogleReCaptchaService(builder.Configuration["ReCaptcha:SecretKey"]));
+// Add rate limiting
+//builder.Services.AddScoped<RateLimitingMiddleware>();
+
+// send 2FA code
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
+// Add CAPTCHA service
+builder.Services.AddSingleton<IReCaptchaService, ReCaptchaService>();
+
+
+
 
 builder.Services.AddControllers(options =>
 {
@@ -88,11 +99,12 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Enable serving static files
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<RateLimitingMiddleware>();
+app.UseMiddleware<RateLimitingMiddleware>(); // Register the rate limiting middleware
 
 app.MapControllers();
 

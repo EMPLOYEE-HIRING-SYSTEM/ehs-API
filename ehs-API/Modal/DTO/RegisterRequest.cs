@@ -7,7 +7,7 @@
             public string Password { get; set; }
             public string ConfirmPassword { get; set; }
             public string MobileNumber { get; set; }
-            public IFormFile Resume { get; set; }
+            public string Resume { get; set; } // Store the URL or file path in the database    
             public bool TermsAccepted { get; set; }
         }   
 

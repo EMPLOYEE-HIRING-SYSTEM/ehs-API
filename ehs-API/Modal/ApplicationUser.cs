@@ -9,7 +9,7 @@ namespace ehs_API.Data
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
         public string MobileNumber { get; set; }
-        public IFormFile Resume { get; set; } // For handling file uploads
+        public string ResumeUrl { get; set; } // Store the URL or file path in the database    
         public bool TermsAccepted { get; set; } // Checkbox for terms and conditions
     }
 }
